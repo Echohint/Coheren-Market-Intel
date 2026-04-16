@@ -1,6 +1,7 @@
 <div align="center">
   <h1>📡 Coherent Market Intel</h1>
   <p><strong>A Premium B2B SaaS Intelligence Board for Remote Engineering Opportunities</strong></p>
+  <p>🌐 <b>Live Deployment:</b> <a href="https://coheren-market-intel-vytwo8afus8q8tunmcbdpr.streamlit.app/">coheren-market-intel-vytwo8afus8q8tunmcbdpr.streamlit.app</a></p>
   
   [![Python](https://img.shields.io/badge/Python-3.14-blue.svg?style=flat-square&logo=python)](https://www.python.org/)
   [![Selenium](https://img.shields.io/badge/Selenium-WebScraping-green.svg?style=flat-square&logo=selenium)](https://www.selenium.dev/)
