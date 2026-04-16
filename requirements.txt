@@ -1,6 +1,6 @@
 selenium
 pandas
 webdriver-manager
-supabase
+requests
 streamlit
 python-dotenv
