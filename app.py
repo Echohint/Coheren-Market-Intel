@@ -3,6 +3,8 @@ import pandas as pd
 import plotly.express as px
 from streamlit_option_menu import option_menu
 from dotenv import load_dotenv
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from src.database import fetch_jobs
 
 # Set page wide config
@@ -82,8 +84,8 @@ st.markdown("""
 # 1. HORIZONTAL NAVBAR
 selected = option_menu(
     menu_title=None,  # Hide the main title
-    options=["Market Overview", "Analytics Hub", "Job Explorer"],
-    icons=["bar-chart", "globe", "search"],
+    options=["Market Overview", "Analytics Hub", "Job Explorer", "🤖 AI Matchmaker"],
+    icons=["bar-chart", "globe", "search", "robot"],
     menu_icon="cast",
     default_index=0,
     orientation="horizontal",
@@ -117,27 +119,28 @@ if df.empty:
     st.error("No data found. Ensure the scraper has run.")
     st.stop()
 
-# --- SIDEBAR FILTERS ---
-with st.sidebar:
-    st.markdown("## 🔍 Active Filters")
-    
-    search_query = st.text_input("Find matching Roles or Companies...", "")
-    
-    all_tags = []
-    if 'tags' in df.columns:
-        df['tags'] = df['tags'].apply(lambda x: x if isinstance(x, list) else [])
-        for tags in df['tags']:
-            all_tags.extend(tags)
-    unique_tags = list(set(all_tags))
-    selected_tags = st.multiselect("Tech Stack Requirements", options=unique_tags, default=[])
-    
-    min_sal = 0
-    max_sal = 300000
-    if 'salary_numeric' in df.columns and not df['salary_numeric'].dropna().empty:
-        min_sal = int(df['salary_numeric'].min())
-        max_sal = int(df['salary_numeric'].max()) + 10000
-        
-    s_min, s_max = st.slider("Acceptable Compensation ($)", min_value=0, max_value=max_sal, value=(0, max_sal), step=10000)
+# --- GLOBAL FILTERS ---
+all_tags = []
+if 'tags' in df.columns:
+    df['tags'] = df['tags'].apply(lambda x: x if isinstance(x, list) else [])
+    for tags in df['tags']:
+        all_tags.extend(tags)
+unique_tags = list(set(all_tags))
+
+min_sal = 0
+max_sal = 300000
+if 'salary_numeric' in df.columns and not df['salary_numeric'].dropna().empty:
+    min_sal = int(df['salary_numeric'].min())
+    max_sal = int(df['salary_numeric'].max()) + 10000
+
+with st.expander("🔍 Advanced Search & Filter Options", expanded=True):
+    col_f1, col_f2, col_f3 = st.columns([1.5, 2, 1.5])
+    with col_f1:
+        search_query = st.text_input("Search Roles or Companies...", "")
+    with col_f2:
+        selected_tags = st.multiselect("Require Tech Stacks / Skills", options=unique_tags, default=[])
+    with col_f3:
+        s_min, s_max = st.slider("Compensation Threshold ($)", min_value=0, max_value=max_sal, value=(0, max_sal), step=10000)
 
 filtered_df = df.copy()
 
@@ -234,3 +237,73 @@ elif selected == "Job Explorer":
     st.markdown("<br>", unsafe_allow_html=True)
     display_cols = ['role', 'company', 'location', 'salary_numeric', 'tags', 'url']
     st.dataframe(filtered_df[display_cols] if not filtered_df.empty else filtered_df, use_container_width=True, hide_index=True)
+
+elif selected == "🤖 AI Matchmaker":
+    st.markdown("### 🤖 NLP Job Matchmaking Engine")
+    st.markdown("Powered by **TF-IDF & Cosine Similarity**. Paste your skills or resume below to mathematically match with the top opportunities in the database.")
+    
+    user_profile = st.text_area("Your Tech Profile / Resume:", height=150, placeholder="e.g. 5+ years experience in Python, specialized in distributed systems, SQL databases, and Pandas. Looking for Senior roles.")
+    
+    if st.button("Calculate Matches 🚀") and user_profile:
+        if not filtered_df.empty:
+            with st.spinner("Executing Vector Calculations..."):
+                # Combine role, tags, and location for robust semantic context
+                def make_document(row):
+                    tags = " ".join(row.get('tags', [])) if isinstance(row.get('tags'), list) else str(row.get('tags', ''))
+                    return f"{row.get('role', '')} {row.get('company', '')} {tags} {row.get('location', '')}"
+                
+                job_docs = filtered_df.apply(make_document, axis=1).tolist()
+                
+                # Prepend user profile to corpus
+                full_corpus = [user_profile] + job_docs
+                
+                # TF-IDF calculation
+                vectorizer = TfidfVectorizer(stop_words='english')
+                tfidf_matrix = vectorizer.fit_transform(full_corpus)
+                
+                # Cosine Similarity between user_profile (index 0) and all jobs (index 1 to end)
+                cosine_sims = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:]).flatten()
+                
+                # Attach scores to dataframe
+                scored_df = filtered_df.copy()
+                scored_df['match_score'] = cosine_sims * 100 # percentage
+                
+                # Filter out zeroes and sort
+                top_matches = scored_df[scored_df['match_score'] > 0].sort_values(by='match_score', ascending=False).head(5)
+                
+            if top_matches.empty:
+                st.warning("No significant semantic overlap found with current market listings. Try broadening your keywords.")
+            else:
+                st.success(f"Discovered {len(top_matches)} Highly Correlated Opportunities!")
+                
+                for _, row in top_matches.iterrows():
+                    score = row['match_score']
+                    salary_disp = row.get('salary', 'Not Specified')
+                    location_disp = row.get('location', 'Remote')
+                    
+                    tags_html = ""
+                    if isinstance(row.get('tags'), list):
+                        for tag in row['tags']:
+                            tags_html += f"<span class='tag-badge'>{tag}</span>"
+                    
+                    card_html = f"""
+                    <div class="job-card" style="border-left: 4px solid #20C997; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3>{row.get('role', 'Unknown')}</h3>
+                                <div class="company">{row.get('company', 'Unknown')}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.8rem; font-weight: 700; color: #20C997;">{score:.1f}%</div>
+                                <div style="color: #a0a0a0; font-size: 0.8rem;">Match Index</div>
+                            </div>
+                        </div>
+                        <div class="meta">📍 {location_disp} | 💰 {salary_disp}</div>
+                        <div class="tags">{tags_html}</div>
+                        <a href="{row.get('url', '#')}" target="_blank" class="apply-btn">View Opportunity</a>
+                    </div>
+                    """
+                    st.markdown(card_html, unsafe_allow_html=True)
+        else:
+            st.error("The database is currently empty. Please clear filters or sync market data.")
+

@@ -6,3 +6,4 @@ streamlit
 python-dotenv
 plotly
 streamlit-option-menu
+scikit-learn
