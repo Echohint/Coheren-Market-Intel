@@ -31,9 +31,13 @@ def scrape_category(url):
     
     try:
         driver.get(url)
-        logger.info(f"[{url}] Waiting for page completion...")
-        time.sleep(5)  # Let dynamic content load
+        logger.info(f"[{url}] Waiting for page completion and scrolling for ~200+ jobs...")
         
+        # Scroll 5 times to load infinite data
+        for _ in range(5):
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)
+            
         # RemoteOK structure: rows with class 'job'
         job_elements = driver.find_elements(By.CSS_SELECTOR, "tr.job")
         logger.info(f"[{url}] Found {len(job_elements)} job elements.")
@@ -52,6 +56,8 @@ def scrape_category(url):
                 salary = ""
                 for loc in location_elements:
                     text = loc.text.strip()
+                    if "upgrade" in text.lower():
+                        continue # Skip upgrade warnings
                     if ("$" in text or "€" in text or "£" in text) or ("k" in text.lower() and "-" in text):
                         salary = text
                     else:

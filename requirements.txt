@@ -5,3 +5,4 @@ requests
 streamlit
 python-dotenv
 plotly
+streamlit-option-menu
