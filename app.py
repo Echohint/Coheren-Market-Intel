@@ -236,7 +236,26 @@ elif selected == "Job Explorer":
     
     st.markdown("<br>", unsafe_allow_html=True)
     display_cols = ['role', 'company', 'location', 'salary_numeric', 'tags', 'url']
-    st.dataframe(filtered_df[display_cols] if not filtered_df.empty else filtered_df, use_container_width=True, hide_index=True)
+    
+    if not filtered_df.empty:
+        # Dynamic Pagination System (LIMIT/OFFSET paradigm) 
+        page_size = 100
+        total_items = len(filtered_df)
+        total_pages = (total_items - 1) // page_size + 1
+        
+        pg_col1, pg_col2, pg_col3 = st.columns([1, 3, 1])
+        with pg_col1:
+            page = st.number_input(f"Navigate Page (Max {total_pages})", min_value=1, max_value=total_pages, value=1, step=1)
+            
+        start_idx = (page - 1) * page_size
+        end_idx = start_idx + page_size
+        
+        with pg_col2:
+            st.markdown(f"<p style='margin-top: 35px; color: #a0a0a0;'>Displaying records {start_idx + 1} to {min(end_idx, total_items)} out of <b>{total_items}</b> total market insights.</p>", unsafe_allow_html=True)
+            
+        st.dataframe(filtered_df[display_cols].iloc[start_idx:end_idx], use_container_width=True, hide_index=True)
+    else:
+        st.warning("No data found according to your current constraints.")
 
 elif selected == "🤖 AI Matchmaker":
     st.markdown("### 🤖 NLP Job Matchmaking Engine")
