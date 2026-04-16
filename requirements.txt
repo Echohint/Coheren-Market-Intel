@@ -1,0 +1,6 @@
+selenium
+pandas
+webdriver-manager
+supabase
+streamlit
+python-dotenv
