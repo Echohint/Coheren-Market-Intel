@@ -146,8 +146,8 @@ filtered_df = df.copy()
 
 if search_query:
     filtered_df = filtered_df[
-        filtered_df['role'].str.contains(search_query, case=False, na=False) |
-        filtered_df['company'].str.contains(search_query, case=False, na=False)
+        filtered_df['role'].str.contains(search_query, case=False, na=False, regex=False) |
+        filtered_df['company'].str.contains(search_query, case=False, na=False, regex=False)
     ]
 
 if selected_tags:
@@ -245,7 +245,11 @@ elif selected == "Job Explorer":
         
         pg_col1, pg_col2, pg_col3 = st.columns([1, 3, 1])
         with pg_col1:
-            page = st.number_input(f"Navigate Page (Max {total_pages})", min_value=1, max_value=total_pages, value=1, step=1)
+            if total_pages > 1:
+                page = st.number_input(f"Navigate Page (Max {total_pages})", min_value=1, max_value=total_pages, value=1, step=1)
+            else:
+                page = 1
+                st.markdown("<p style='margin-top: 35px; color: #a0a0a0;'><b>Page 1 of 1</b></p>", unsafe_allow_html=True)
             
         start_idx = (page - 1) * page_size
         end_idx = start_idx + page_size
