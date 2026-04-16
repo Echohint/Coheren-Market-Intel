@@ -11,8 +11,15 @@ def run_pipeline():
     load_dotenv()
     logging.info("Starting ELT pipeline for RemoteOK...")
     
+    # Set the target URLs to implement Fresher, SDE, and Data Engineering roles concurrently
+    target_urls = [
+        "https://remoteok.com/remote-data-engineer-jobs",
+        "https://remoteok.com/remote-software-engineer-jobs",
+        "https://remoteok.com/remote-junior-jobs"
+    ]
+    
     # Extract
-    raw_data = scrape_jobs()
+    raw_data = scrape_jobs(target_urls)
     if not raw_data:
         logging.info("No data scraped. Exiting.")
         return
