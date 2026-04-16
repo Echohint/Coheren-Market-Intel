@@ -72,7 +72,7 @@ st.markdown("<p style='font-size: 1.2rem; color: #a0a0a0;'>An interactive, real-
 # Load environment variables
 load_dotenv()
 
-@st.cache_data(ttl=600)
+# Removing cache so you instantly get live updates for now
 def load_data():
     raw_data = fetch_jobs()
     if not raw_data:
