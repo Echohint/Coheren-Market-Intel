@@ -62,6 +62,10 @@ def clean_data(raw_jobs: list) -> list:
     df['location'] = df['location'].replace({'': 'Remote'})
     df['salary'] = df['salary'].replace({'': 'Not Specified'})
     
+    # Drop date to match user job_listings schema which uses created_at
+    if 'date' in df.columns:
+        df = df.drop(columns=['date'])
+        
     logger.info("Cleaning complete.")
     return df.to_dict(orient='records')
 

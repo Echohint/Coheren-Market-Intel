@@ -54,7 +54,7 @@ def fetch_jobs():
     if not url:
         return []
         
-    endpoint = f"{url}/rest/v1/job_listings?order=date.desc"
+    endpoint = f"{url}/rest/v1/job_listings?order=created_at.desc"
     headers = get_supabase_headers()
     headers.pop("Prefer", None)  # Remove Prefer header for GET request
     
