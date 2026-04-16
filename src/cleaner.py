@@ -52,15 +52,15 @@ def clean_data(raw_jobs: list) -> list:
     df['tags'] = df['tags'].apply(lambda x: x if isinstance(x, list) else [])
     
     # Calculate average salary
-    df['average_salary'] = df['salary'].apply(clean_salary)
-    
+    df['salary_numeric'] = df['salary'].apply(clean_salary)
+    # Convert to standard INT (handle NaN properly)
+    df['salary_numeric'] = df['salary_numeric'].fillna(0).astype(int)
+    # Set back to None if 0 to avoid false values in DB if it allows null
+    df['salary_numeric'] = df['salary_numeric'].replace({0: None})
+
     # Fill empty locations and salaries
     df['location'] = df['location'].replace({'': 'Remote'})
     df['salary'] = df['salary'].replace({'': 'Not Specified'})
-    
-    # Fill NA for average_salary
-    # Supabase allows NULL/None natively, so we ensure pure NaN becomes None
-    df['average_salary'] = df['average_salary'].where(pd.notnull(df['average_salary']), None)
     
     logger.info("Cleaning complete.")
     return df.to_dict(orient='records')

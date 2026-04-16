@@ -51,8 +51,8 @@ with col2:
     st.metric("Unique Companies Hiring", filtered_df['company'].nunique())
 with col3:
     avg_salary_text = "N/A"
-    if 'average_salary' in filtered_df.columns:
-        avg_base = filtered_df['average_salary'].mean()
+    if 'salary_numeric' in filtered_df.columns:
+        avg_base = filtered_df['salary_numeric'].mean()
         if pd.notnull(avg_base):
             avg_salary_text = f"${int(avg_base/1000)}k"
     st.metric("Average Estimated Salary", avg_salary_text)
@@ -79,9 +79,9 @@ with c1:
 
 with c2:
     st.subheader("💰 Jobs by Salary Range")
-    if 'average_salary' in filtered_df.columns and filtered_df['average_salary'].notnull().any():
+    if 'salary_numeric' in filtered_df.columns and filtered_df['salary_numeric'].notnull().any():
         sal_chart = alt.Chart(filtered_df).mark_bar(color='#20C997').encode(
-            x=alt.X('average_salary:Q', bin=alt.Bin(maxbins=15), title="Salary Range ($)"),
+            x=alt.X('salary_numeric:Q', bin=alt.Bin(maxbins=15), title="Salary Range ($)"),
             y=alt.Y('count():Q', title="Number of Jobs"),
             tooltip=['count()']
         ).properties(height=350)

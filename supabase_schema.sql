@@ -1,15 +1,11 @@
--- Execute this script in your Supabase SQL Editor to create the necessary table
-
-CREATE TABLE public.jobs (
-    id text not null primary key,
-    role text,
-    company text,
-    location text,
-    salary text,
-    average_salary numeric,
-    tags text[],
-    date text,
-    url text
+CREATE TABLE job_listings (
+    id TEXT PRIMARY KEY,
+    role TEXT,
+    company TEXT,
+    location TEXT,
+    salary TEXT,
+    salary_numeric INT,
+    tags TEXT[],
+    url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-
--- Note: average_salary is calculated by pandas during the ETL pipeline.

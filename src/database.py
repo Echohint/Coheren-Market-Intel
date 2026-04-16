@@ -23,7 +23,7 @@ def upsert_jobs(jobs: list):
     try:
         supabase = get_supabase_client()
         # Perform upsert
-        response = supabase.table('jobs').upsert(jobs).execute()
+        response = supabase.table('job_listings').upsert(jobs).execute()
         logger.info(f"Successfully upserted {len(jobs)} jobs to Supabase.")
         return response
     except Exception as e:
@@ -31,11 +31,11 @@ def upsert_jobs(jobs: list):
 
 def fetch_jobs():
     """
-    Fetches all jobs from the 'jobs' table for Streamlit.
+    Fetches all jobs from the 'job_listings' table for Streamlit.
     """
     try:
         supabase = get_supabase_client()
-        response = supabase.table('jobs').select('*').order('date', desc=True).execute()
+        response = supabase.table('job_listings').select('*').order('date', desc=True).execute()
         return response.data
     except Exception as e:
         logger.error(f"Error fetching from Supabase: {e}")
